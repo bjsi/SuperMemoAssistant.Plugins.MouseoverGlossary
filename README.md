@@ -11,7 +11,7 @@
 
 ## Installation
 
-> Note: This plugin depends on the [Mouseover Popup plugin](https://github.com/bjsi/SuperMemoAssistant.Plugins.MouseoverPopup). Make sure you install it alongside Mouseover Wiki.
+> Note: This plugin depends on the [Mouseover Popup plugin](https://github.com/bjsi/SuperMemoAssistant.Plugins.MouseoverPopup). Make sure you install it alongside Mouseover Glossary.
 
 ### Manual Installation
 
