@@ -33,8 +33,22 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
     [Heading("General Settings")]
 
-    //[Field(Name = "Setting 1")]
-    //public string Name { get; set; }
+    [Field(Name = "Scan SM-related articles for glossary terms?")]
+    public bool ScanElements { get; set; } = true;
+
+    [Field(Name = "Element Reference Regexes")]
+    [MultiLine]
+    public string ReferenceRegexes { get; set; } = @".*supermemo.*
+.*super-memory.*
+.*super-memo.*
+.*supermemopedia.*
+.*supermemory.*
+.*incremental reading.*
+.*incremental learning.*";
+
+    [Field(Name = "Concept Regexes")]
+    [MultiLine]
+    public string ConceptRegexes { get; set; } = @"";
 
     [JsonIgnore]
     public bool IsChanged { get; set; }

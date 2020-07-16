@@ -33,11 +33,17 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 {
   using System.Collections.Generic;
   using System.Diagnostics.CodeAnalysis;
+  using System.Linq;
+  using System.Text.RegularExpressions;
   using Anotar.Serilog;
+  using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
+  using SuperMemoAssistant.Interop.SuperMemo.Core;
+  using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
   using SuperMemoAssistant.Services;
   using SuperMemoAssistant.Services.IO.HotKeys;
   using SuperMemoAssistant.Services.Sentry;
   using SuperMemoAssistant.Services.UI.Configuration;
+  using SuperMemoAssistant.Sys.Remoting;
 
   // ReSharper disable once UnusedMember.Global
   // ReSharper disable once ClassNeverInstantiated.Global
@@ -64,6 +70,15 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
     private ContentService _contentProvider => new ContentService();
     private const string ProviderName = "SuperMemo Glossary";
+    private readonly Dictionary<string, string> GlossaryTermUrlMap = new Dictionary<string, string>
+    {
+      { "", "" },
+      { "", "" },
+      { "", "" },
+      { "", "" },
+      { "", "" },
+      { "", "" },
+    };
     #endregion
 
     private void LoadConfig()
@@ -91,8 +106,103 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       }
       LogTo.Debug($"Successfully registered provider {ProviderName} with MouseoverPopup Service");
 
+      //Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(ElementWdw_OnElementChanged);
+
     }
 
+    private void ElementWdw_OnElementChanged(SMDisplayedElementChangedEventArgs obj)
+    {
+
+      var element = obj.NewElement;
+      if (element.IsNull())
+        return;
+
+      if (CategoryPathMatches(element) || ReferenceMatches())
+      {
+        var htmlCtrls = ContentUtils.GetHtmlCtrls();
+        if (htmlCtrls.IsNull() || !htmlCtrls.Any())
+          return;
+
+
+        // TODO: Use proper keyword search algo
+        foreach (KeyValuePair<int, IControlHtml> kvpair in htmlCtrls)
+        {
+
+          int idx = kvpair.Key;
+          var htmlCtrl = kvpair.Value;
+          var words = htmlCtrl?.Text?.Split((char[])null);
+          if (words.IsNull() || words.Length == 0)
+            continue;
+
+          foreach (var word in words)
+          {
+          }
+        }
+      }
+
+    }
+
+    private bool ReferenceMatches()
+    {
+
+      var htmlCtrl = ContentUtils.GetFirstHtmlCtrl();
+      string text = htmlCtrl?.Text;
+      if (text.IsNullOrEmpty())
+        return false;
+
+      var refs = ReferenceParser.GetReferences(htmlCtrl?.Text);
+
+      string[] SMRegexes = Config.ReferenceRegexes
+        ?.Replace("\r\n", "\n")
+        ?.Split('\n');
+
+      if (SMRegexes.IsNull() || !SMRegexes.Any())
+        return false;
+
+      foreach (var pattern in SMRegexes)
+      {
+        var regex = new Regex(pattern, RegexOptions.IgnoreCase);
+        if (regex.Match(refs.Link).Success || regex.Match(refs.Source).Success)
+        {
+          return true;
+        }
+      }
+
+      return false;
+
+    }
+
+    private bool CategoryPathMatches(IElement element)
+    {
+
+      if (element.IsNull())
+        return false;
+
+      var conceptRegexes = Config.ConceptRegexes
+        ?.Replace("\r\n", "\n")
+        ?.Split('\n');
+
+      if (conceptRegexes.IsNull() || !conceptRegexes.Any())
+        return false;
+
+      var cur = element.Parent;
+      while (!cur.IsNull())
+      {
+        if (cur.Type == Interop.SuperMemo.Elements.Models.ElementType.ConceptGroup)
+        {
+
+          // TODO: Check that this works
+          var concept = Svc.SM.Registry.Concept[cur.Id];
+          if (!concept.IsNull() && conceptRegexes.Any(x => new Regex(x).Match(concept.Name).Success))
+            return true;
+
+        }
+        cur = cur.Parent;
+      }
+
+      return false;
+
+    }
 
     #endregion
 
