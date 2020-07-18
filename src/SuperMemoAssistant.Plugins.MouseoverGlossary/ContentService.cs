@@ -46,11 +46,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         if (!matched)
           return null;
 
-        string title = match.Groups[1].Value;
-        if (title.IsNullOrEmpty())
-          return null;
-
-        return GetSMGlossaryItem(ct, url, title);
+        return GetSMGlossaryItem(ct, url);
 
       }
       catch (Exception ex)
@@ -60,7 +56,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       }
     }
 
-    private async Task<PopupContent> GetSMGlossaryItem(RemoteCancellationToken ct, string url, string title)
+    private async Task<PopupContent> GetSMGlossaryItem(RemoteCancellationToken ct, string url)
     {
 
       string response = await GetAsync(ct.Token(), url);
@@ -77,14 +73,16 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       var doc = new HtmlDocument();
       doc.LoadHtml(content);
 
+      doc = doc.ConvRelToAbsLinks("https://www.help.supermemo.org");
+
       var defNode = doc.DocumentNode.SelectSingleNode("//dl");
       var titleNode = defNode.SelectSingleNode("//dt");
 
       if (defNode.IsNull() || titleNode.IsNull())
         return null;
 
-      var definition = defNode.InnerText;
-      var title = titleNode.InnerText;
+      var definition = defNode.OuterHtml;
+      var title = titleNode.OuterHtml;
 
       if (definition.IsNullOrEmpty() || title.IsNullOrEmpty())
         return null;
@@ -92,11 +90,13 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       string html = @"
           <html>
             <body>
-              {0}
+              <h1>{0}</h1>
+              <p>{1}</p>
             </body>
           </html>";
 
-      html = String.Format(html, definition);
+      html = String.Format(html, title, definition);
+
 
       var refs = new References();
       refs.Author = "Piotr Wozniak";

@@ -70,15 +70,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
     private ContentService _contentProvider => new ContentService();
     private const string ProviderName = "SuperMemo Glossary";
-    private readonly Dictionary<string, string> GlossaryTermUrlMap = new Dictionary<string, string>
-    {
-      { "", "" },
-      { "", "" },
-      { "", "" },
-      { "", "" },
-      { "", "" },
-      { "", "" },
-    };
+    private readonly Dictionary<string, string> GlossaryTermUrlMap = new Dictionary<string, string>();
     #endregion
 
     private void LoadConfig()
