@@ -102,7 +102,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       refs.Author = "Piotr Wozniak";
       refs.Link = url;
       refs.Source = "SuperMemo Glossary";
-      refs.Title = title;
+      refs.Title = titleNode.InnerText;
       return new PopupContent(refs, html);
 
     }
