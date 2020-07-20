@@ -9,7 +9,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 {
   public static class UrlUtils
   {
-    public static readonly string WikiGlossaryRegex = @"^https?\:\/\/help\.supermemo\.org\/wiki\/Glossary\:([\w]+)+";
+    public static readonly string WikiGlossaryRegex = @"^https?\:\/\/(?:www\.)?help\.supermemo\.org\/wiki\/Glossary\:([\w]+)+";
     // TODO:
     //private const string WikiGlossary = @"^https?\:\/\/([\w\.]+)supermemo.guru\/wiki\/Glossary([\w]+)+";
     // Wiki glossary https://supermemo.guru/wiki/Glossary

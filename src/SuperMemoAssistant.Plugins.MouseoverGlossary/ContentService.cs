@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 {
-  public class ContentService : PerpetualMarshalByRefObject, IContentProvider
+  public class ContentService : PerpetualMarshalByRefObject, IMouseoverContentProvider
   {
 
     private readonly HttpClient _httpClient;
@@ -103,7 +103,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       refs.Link = url;
       refs.Source = "SuperMemo Glossary";
       refs.Title = titleNode.InnerText;
-      return new PopupContent(refs, html);
+      return new PopupContent(refs, html, true, true, false, -1, refs.Link);
 
     }
 
