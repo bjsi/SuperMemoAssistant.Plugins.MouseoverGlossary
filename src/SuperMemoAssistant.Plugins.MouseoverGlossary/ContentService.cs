@@ -119,7 +119,6 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
       return new PopupContent(refs, html, true, true, false, -1, url, true, $"https://supermemo.guru/index.php?title={term}&action=edit");
 
-
     }
 
     private async Task<PopupContent> GetHelpGlossaryItem(RemoteCancellationToken ct, string url, string term)

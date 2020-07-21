@@ -29,26 +29,40 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
     [Heading("By Jamesb | Experimental Learning")]
 
     [Heading("Features:")]
-    [Text(@"- Open glossary definitions for SuperMemo in popup windows")]
+    [Text(@"- Open glossary definitions for SuperMemo in popup windows
+- Supports glossary definitions from help.supermemo.org and supermemo.guru")]
 
     [Heading("General Settings")]
 
     [Field(Name = "Scan SM-related articles for glossary terms?")]
     public bool ScanElements { get; set; } = true;
 
-    [Field(Name = "Element Reference Regexes")]
+    [Heading("Keyword Scanning Settings")]
+
+    [Heading("Reference Regexes")]
+    [Field(Name = "Title Regexes")]
     [MultiLine]
-    public string ReferenceRegexes { get; set; } = @".*supermemo.*
-.*super-memory.*
+    public string ReferenceTitleRegexes { get; set; }
+
+    [Field(Name = "Author Regexes")]
+    [MultiLine]
+    public string ReferenceAuthorRegexes { get; set; } = @"
+piotr wozniak
+woz";
+
+    [Field(Name = "Source Regexes")]
+    public string ReferenceSourceRegexes { get; set; } = @"
+.*supermemo.*
 .*super-memo.*
-.*supermemopedia.*
-.*supermemory.*
-.*incremental reading.*
-.*incremental learning.*";
+.*SM.*";
+
+    [Field(Name = "Link Regexes")]
+    public string ReferenceLinkRegexes { get; set; } = @"
+.*supermemo.*";
 
     [Field(Name = "Concept Regexes")]
     [MultiLine]
-    public string ConceptRegexes { get; set; } = @"";
+    public string ConceptNameRegexes { get; set; }
 
     [JsonIgnore]
     public bool IsChanged { get; set; }

@@ -36,6 +36,9 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
   using System.Linq;
   using System.Text.RegularExpressions;
   using Anotar.Serilog;
+  using Ganss.Text;
+  using mshtml;
+  using SuperMemoAssistant.Extensions;
   using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
   using SuperMemoAssistant.Interop.SuperMemo.Core;
   using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
@@ -68,9 +71,27 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
     public MouseoverGlossaryCfg Config;
 
-    private ContentService _contentProvider => new ContentService();
     private const string ProviderName = "SuperMemo Glossary";
-    private readonly Dictionary<string, string> GlossaryTermUrlMap = new Dictionary<string, string>();
+
+    /// <summary>
+    /// Content provider to be registered with MouseoverPopup service
+    /// </summary>
+    private ContentService _contentProvider => new ContentService();
+
+    /// <summary>
+    /// Fast keyword search data structure
+    /// </summary>
+    private AhoCorasick Aho = new AhoCorasick(Keywords.KeywordMap.Keys);
+
+    private int MaxTextLength = 2000000000;
+
+    // Regex Arrays
+    private string[] TitleRegexes => Config.ReferenceTitleRegexes?.Replace("\r\n", "\n")?.Split('\n');
+    private string[] AuthorRegexes => Config.ReferenceAuthorRegexes?.Replace("\r\n", "\n")?.Split('\n');
+    private string[] LinkRegexes => Config.ReferenceLinkRegexes?.Replace("\r\n", "\n")?.Split('\n');
+    private string[] SourceRegexes => Config.ReferenceSourceRegexes?.Replace("\r\n", "\n")?.Split('\n');
+    private string[] ConceptRegexes => Config.ConceptNameRegexes?.Replace("\r\n", "\n")?.Split('\n');
+
     #endregion
 
     private void LoadConfig()
@@ -96,9 +117,10 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         LogTo.Error($"Failed to Register provider {ProviderName} with MouseoverPopup Service");
         return;
       }
+
       LogTo.Debug($"Successfully registered provider {ProviderName} with MouseoverPopup Service");
 
-      //Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(ElementWdw_OnElementChanged);
+      Svc.SM.UI.ElementWdw.OnElementChanged += new ActionProxy<SMDisplayedElementChangedEventArgs>(ElementWdw_OnElementChanged);
 
     }
 
@@ -115,22 +137,74 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         if (htmlCtrls.IsNull() || !htmlCtrls.Any())
           return;
 
-
-        // TODO: Use proper keyword search algo
         foreach (KeyValuePair<int, IControlHtml> kvpair in htmlCtrls)
         {
 
           int idx = kvpair.Key;
           var htmlCtrl = kvpair.Value;
-          var words = htmlCtrl?.Text?.Split((char[])null);
-          if (words.IsNull() || words.Length == 0)
+          var text = htmlCtrl?.Text?.ToLowerInvariant();
+          var htmlDoc = htmlCtrl?.GetDocument();
+
+          if (text.IsNullOrEmpty() || htmlDoc.IsNull())
             continue;
 
-          foreach (var word in words)
+          var matches = Aho.Search(text);
+          if (!matches.Any())
+            continue;
+
+          var orderedMatches = matches.OrderBy(x => x.Index);
+          var selObj = htmlDoc.selection?.createRange() as IHTMLTxtRange;
+          if (selObj.IsNull())
+            continue;
+
+          foreach (var match in orderedMatches)
           {
+
+            string word = match.Word;
+            if (selObj.findText(word))
+            {
+
+              var parentEl = selObj.parentElement();
+              if (!parentEl.IsNull())
+              {
+                if (parentEl.tagName.ToLowerInvariant() == "a")
+                  continue;
+              }
+              else
+              {
+
+                if (!Keywords.KeywordMap.TryGetValue(word, out var href))
+                  continue;
+
+                // selObj.pasteHTML($"<a href='{href}'><a>");
+
+              }
+
+            }
+
+            selObj.collapse(false);
+            selObj.moveEnd("character", MaxTextLength);
+
           }
+            
         }
       }
+
+    }
+
+    private bool TryMatchRegexList(string input, string[] regexes)
+    {
+
+      if (input.IsNullOrEmpty())
+        return false;
+
+      if (regexes.IsNull() || !regexes.Any())
+        return false;
+
+      if (regexes.Any(r => new Regex(r).Match(input).Success))
+        return true;
+
+      return false;
 
     }
 
@@ -143,22 +217,20 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         return false;
 
       var refs = ReferenceParser.GetReferences(htmlCtrl?.Text);
-
-      string[] SMRegexes = Config.ReferenceRegexes
-        ?.Replace("\r\n", "\n")
-        ?.Split('\n');
-
-      if (SMRegexes.IsNull() || !SMRegexes.Any())
+      if (refs.IsNull())
         return false;
 
-      foreach (var pattern in SMRegexes)
-      {
-        var regex = new Regex(pattern, RegexOptions.IgnoreCase);
-        if (regex.Match(refs.Link).Success || regex.Match(refs.Source).Success)
-        {
-          return true;
-        }
-      }
+      else if (TryMatchRegexList(refs.Source, SourceRegexes))
+        return true;
+
+      else if (TryMatchRegexList(refs.Link, LinkRegexes))
+        return true;
+
+      if (TryMatchRegexList(refs.Title, TitleRegexes))
+        return true;
+
+      else if (TryMatchRegexList(refs.Author, AuthorRegexes))
+        return true;
 
       return false;
 
@@ -170,11 +242,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       if (element.IsNull())
         return false;
 
-      var conceptRegexes = Config.ConceptRegexes
-        ?.Replace("\r\n", "\n")
-        ?.Split('\n');
-
-      if (conceptRegexes.IsNull() || !conceptRegexes.Any())
+      if (ConceptRegexes.IsNull() || !ConceptRegexes.Any())
         return false;
 
       var cur = element.Parent;
@@ -185,7 +253,9 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
           // TODO: Check that this works
           var concept = Svc.SM.Registry.Concept[cur.Id];
-          if (!concept.IsNull() && conceptRegexes.Any(x => new Regex(x).Match(concept.Name).Success))
+          string name = concept.Name;
+
+          if (!concept.IsNull() && ConceptRegexes.Any(x => new Regex(x).Match(name).Success))
             return true;
 
         }
