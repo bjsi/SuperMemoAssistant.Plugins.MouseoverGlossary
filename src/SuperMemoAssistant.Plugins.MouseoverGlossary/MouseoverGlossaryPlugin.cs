@@ -91,7 +91,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
       LoadConfig();
 
-      if (!this.RegisterProvider(ProviderName, new List<string> { UrlUtils.WikiGlossaryRegex }, _contentProvider))
+      if (!this.RegisterProvider(ProviderName, new List<string> { UrlUtils.HelpGlossaryRegex, UrlUtils.GuruGlossaryRegex }, _contentProvider))
       {
         LogTo.Error($"Failed to Register provider {ProviderName} with MouseoverPopup Service");
         return;

@@ -41,12 +41,26 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         if (url.IsNullOrEmpty())
           return null;
 
-        Match match = new Regex(UrlUtils.WikiGlossaryRegex).Match(url);
-        bool matched = match.Success;
-        if (!matched)
+        Match Help = new Regex(UrlUtils.HelpGlossaryRegex).Match(url);
+        Match Guru = new Regex(UrlUtils.GuruGlossaryRegex).Match(url);
+
+        if (!(Guru.Success || Help.Success))
           return null;
 
-        return GetSMGlossaryItem(ct, url);
+        if (Guru.Success && UrlUtils.GuruGlossaryTerms.Any(x => x == Guru.Groups[1].Value))
+        {
+
+          string term = Guru.Groups[1].Value;
+          return GetGuruGlossaryItem(ct, url, term);
+
+        }
+        else
+        {
+
+          string term = Help.Groups[1].Value;
+          return GetHelpGlossaryItem(ct, url, term);
+
+        }
 
       }
       catch (Exception ex)
@@ -56,18 +70,70 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       }
     }
 
-    private async Task<PopupContent> GetSMGlossaryItem(RemoteCancellationToken ct, string url)
+    private async Task<PopupContent> GetGuruGlossaryItem(RemoteCancellationToken ct, string url, string term)
     {
-
+      
       string response = await GetAsync(ct.Token(), url);
-      return CreatePopupContent(response, url);
+      return CreateGuruGlossaryContent(response, url, term);
 
     }
 
-    private PopupContent CreatePopupContent(string content, string url)
+    private PopupContent CreateGuruGlossaryContent(string content, string url, string term)
     {
 
-      if (content.IsNullOrEmpty() || url.IsNullOrEmpty())
+      if (content.IsNullOrEmpty() || url.IsNullOrEmpty() || term.IsNullOrEmpty())
+        return null;
+
+      var doc = new HtmlDocument();
+      doc.LoadHtml(content);
+
+      doc = doc.ConvRelToAbsLinks("https://supermemo.guru/");
+
+      var titleNode = doc.DocumentNode.Descendants().Where(x => x.Id == "firstHeading").FirstOrDefault();
+      var contentNode = doc.DocumentNode.Descendants().Where(x => x.Id == "mw-content-text").FirstOrDefault();
+
+      if (titleNode.IsNull() || contentNode.IsNull())
+        return null;
+
+      string title = titleNode.OuterHtml;
+      string definition = contentNode.OuterHtml;
+
+      if (title.IsNullOrEmpty() || definition.IsNullOrEmpty())
+        return null;
+
+      string html = @"
+          <html>
+            <body>
+              <h1>{0}</h1>
+              <p>{1}</p>
+            </body>
+          </html>";
+
+      html = string.Format(html, title, definition);
+
+      var refs = new References();
+      refs.Title = title;
+      refs.Author = "Piotr Wozniak";
+      refs.Link = url;
+      refs.Source = "SuperMemoGuru Glossary";
+
+      return new PopupContent(refs, html, true, true, false, -1, url, true, $"https://supermemo.guru/index.php?title={term}&action=edit");
+
+
+    }
+
+    private async Task<PopupContent> GetHelpGlossaryItem(RemoteCancellationToken ct, string url, string term)
+    {
+
+      string response = await GetAsync(ct.Token(), url);
+      return CreateHelpGlossaryContent(response, url, term);
+
+    }
+
+    private PopupContent CreateHelpGlossaryContent(string content, string url, string term)
+    {
+
+      if (content.IsNullOrEmpty() || url.IsNullOrEmpty() || term.IsNullOrEmpty())
         return null;
 
       var doc = new HtmlDocument();
@@ -101,9 +167,9 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       var refs = new References();
       refs.Author = "Piotr Wozniak";
       refs.Link = url;
-      refs.Source = "SuperMemo Glossary";
+      refs.Source = "SuperMemo Help Glossary";
       refs.Title = titleNode.InnerText;
-      return new PopupContent(refs, html, true, true, false, -1, refs.Link);
+      return new PopupContent(refs, html, true, true, false, -1, refs.Link, true, $"https://www.help.supermemo.org/index.php?title=Glossary:{term}&action=edit");
 
     }
 

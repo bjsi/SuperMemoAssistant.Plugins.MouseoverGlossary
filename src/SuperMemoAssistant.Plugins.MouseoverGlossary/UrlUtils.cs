@@ -9,11 +9,89 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 {
   public static class UrlUtils
   {
-    public static readonly string WikiGlossaryRegex = @"^https?\:\/\/(?:www\.)?help\.supermemo\.org\/wiki\/Glossary\:([\w]+)+";
-    // TODO:
-    //private const string WikiGlossary = @"^https?\:\/\/([\w\.]+)supermemo.guru\/wiki\/Glossary([\w]+)+";
-    // Wiki glossary https://supermemo.guru/wiki/Glossary
+    public static readonly string HelpGlossaryRegex = @"^https?\:\/\/(?:www\.)?help\.supermemo\.org\/wiki\/Glossary\:([\w]+)+";
 
+    public static readonly string GuruGlossaryRegex = @"^https?\:\/\/(?:www\.)?supermemo\.guru\/wiki\/([\w-]+)+";
+
+    public static readonly string[] GuruGlossaryTerms = new string[]
+    {
+
+      "Abstractness",
+      "Knowledge_acquisition_rate",
+      "Active_recall",
+      "Adaptability",
+      "Applicability",
+      "Behavioral_space",
+      "Behavioral_system",
+      "Biphasic_sleep",
+      "Circadian_cycle",
+      "Circadian_phase",
+      "Circadian_sleep_propensity",
+      "Childhood_amnesia",
+      "Chronic_stress",
+      "Cloze_deletion",
+      "Coherence",
+      "Concept_network",
+      "Conceptual_computation",
+      "Conceptualization",
+      "Consistency",
+      "Consolidation",
+      "Democratic_school",
+      "Deschooling",
+      "Factory_model_of_education",
+      "Forgetting_curve",
+      "Free_learning",
+      "Free_running_sleep",
+      "Fundamental_law_of_learning",
+      "Generalization",
+      "Homeostatic_sleep_propensity",
+      "Homeschooling",
+      "Idiocracy_problem",
+      "Increading",
+      "Incremental_learning",
+      "Incremental_reading",
+      "Incremental_video",
+      "Interference",
+      "Learn_drive",
+      "Learned_helplessness",
+      "Learntropy",
+      "Knowledge_darwinism",
+      "Knowledge_redundancy",
+      "Knowledge_valuation network",
+      "Memory_complexity",
+      "Memory_optimization",
+      "Minimum_information_principle",
+      "Natural_creativity cycle",
+      "Passive_review",
+      "Passive_schooling",
+      "Pattern_completion",
+      "Permastore",
+      "Polyphasic_sleep",
+      "Problem_valuation_network",
+      "Push_zone",
+      "Priority_queue",
+      "Rational_procrastination",
+      "Redundancy",
+      "Regress_zone",
+      "Retrievability",
+      "Self-directed_learning",
+      "Self-learning",
+      "Semantic_learning",
+      "Sleep_phase",
+      "Spaced_repetition",
+      "Spacing_effect",
+      "Spacing_effect_gain",
+      "Stability",
+      "Stabilization_curve",
+      "Stabilization_decay",
+      "Toxic_memory",
+      "Two_component_model_of_memory",
+      "Two-process_model_of_sleep_regulation",
+      "Unschooling",
+      "Variable_reward",
+      "War_of_the_networks",
+
+    };
 
     public static string ConvRelToAbsLink(string baseUrl, string relUrl)
     {
