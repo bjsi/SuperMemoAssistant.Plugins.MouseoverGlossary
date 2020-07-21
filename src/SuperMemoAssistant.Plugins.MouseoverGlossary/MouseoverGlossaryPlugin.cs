@@ -78,20 +78,6 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
     /// </summary>
     private ContentService _contentProvider => new ContentService();
 
-    /// <summary>
-    /// Fast keyword search data structure
-    /// </summary>
-    private AhoCorasick Aho = new AhoCorasick(Keywords.KeywordMap.Keys);
-
-    private int MaxTextLength = 2000000000;
-
-    // Regex Arrays
-    private string[] TitleRegexes => Config.ReferenceTitleRegexes?.Replace("\r\n", "\n")?.Split('\n');
-    private string[] AuthorRegexes => Config.ReferenceAuthorRegexes?.Replace("\r\n", "\n")?.Split('\n');
-    private string[] LinkRegexes => Config.ReferenceLinkRegexes?.Replace("\r\n", "\n")?.Split('\n');
-    private string[] SourceRegexes => Config.ReferenceSourceRegexes?.Replace("\r\n", "\n")?.Split('\n');
-    private string[] ConceptRegexes => Config.ConceptNameRegexes?.Replace("\r\n", "\n")?.Split('\n');
-
     #endregion
 
     private void LoadConfig()
@@ -112,7 +98,8 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
       LoadConfig();
 
-      if (!this.RegisterProvider(ProviderName, new List<string> { UrlUtils.HelpGlossaryRegex, UrlUtils.GuruGlossaryRegex }, _contentProvider))
+      // Register with MouseoverPopup
+      if (!this.RegisterProvider(ProviderName, new List<string> { UrlUtils.HelpGlossaryRegex, UrlUtils.GuruGlossaryRegex }, Keywords.KeywordMap, Config.KeywordHighlightColor, _contentProvider))
       {
         LogTo.Error($"Failed to Register provider {ProviderName} with MouseoverPopup Service");
         return;
@@ -176,6 +163,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
                 if (!Keywords.KeywordMap.TryGetValue(word, out var href))
                   continue;
 
+                // TODO:
                 // selObj.pasteHTML($"<a href='{href}'><a>");
 
               }

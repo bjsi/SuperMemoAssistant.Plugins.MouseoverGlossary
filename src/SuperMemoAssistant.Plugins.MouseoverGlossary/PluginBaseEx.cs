@@ -11,14 +11,14 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
   public static class PluginBaseEx
   {
 
-    public static bool RegisterProvider<T>(this SMAPluginBase<T> plugin, string name, List<string> urlRegexes, IMouseoverContentProvider provider) where T : SMAPluginBase<T>
+    public static bool RegisterProvider<T>(this SMAPluginBase<T> plugin, string name, List<string> urlRegexes, Dictionary<string, string> keywordUrlMap, string color, IMouseoverContentProvider provider) where T : SMAPluginBase<T>
     {
       var svc = plugin.GetService<IMouseoverSvc>();
 
       if (svc == null)
         return false;
 
-      return svc.RegisterProvider(name, urlRegexes, provider);
+      return svc.RegisterProvider(name, urlRegexes, keywordUrlMap, color, provider);
     }
 
   }

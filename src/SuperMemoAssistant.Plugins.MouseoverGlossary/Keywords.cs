@@ -12,6 +12,8 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
     public static Dictionary<string, string> KeywordMap = new Dictionary<string, string>
     {
 
+      //// Beginner?
+
       { "supermemo",          "https://help.supermemo.org/wiki/Glossary:SuperMemo" },
       { "SM",                 "https://help.supermemo.org/wiki/Glossary:SuperMemo" },
       { "super-memo",         "https://help.supermemo.org/wiki/Glossary:SuperMemo" },
@@ -24,18 +26,18 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       { "interval",           "https://help.supermemo.org/wiki/Glossary:Interval" },
       { "knowledge tree",     "https://help.supermemo.org/wiki/Glossary:Knowledge_tree" },
 
-      //// Intermediate
-      //{ "a-factor", "" },
-      //{ "auto-postpone", "" },
-      //{ "postpone", "" },
-      //{ "incremental reading", "" },
-      //{ "incremental audio", "" },
-      //{ "incremental learning", "" },
-      //{ "incremental video", "" },
-      //{ "incremental writing", "" },
-      //{ "lapse", "" },
-      //{ "leech", "" },
-      //{ "forgetting index", "" },
+      //// Intermediate?
+      
+      { "a-factor",               "https://help.supermemo.org/wiki/Glossary:A-Factor" },
+      { "auto-postpone",          "https://help.supermemo.org/wiki/Glossary:Auto-postpone" },
+      { "incremental reading",    "https://help.supermemo.org/wiki/Glossary:Incremental_reading" },
+      { "incremental audio",      "https://help.supermemo.org/wiki/Glossary:Incremental_audio" },
+      { "incremental learning",   "https://help.supermemo.org/wiki/Glossary:Incremental_learning" },
+      { "incremental video",      "https://help.supermemo.org/wiki/Glossary:Incremental_video" },
+      { "incremental writing",    "https://help.supermemo.org/wiki/Glossary:Incremental_writing" },
+      { "lapse",                  "https://help.supermemo.org/wiki/Glossary:Incremental_reading" },
+      { "leech",                  "https://help.supermemo.org/wiki/Glossary:Lapse" },
+      { "forgetting index",       "https://help.supermemo.org/wiki/Glossary:Forgetting_index" },
 
     };
 
