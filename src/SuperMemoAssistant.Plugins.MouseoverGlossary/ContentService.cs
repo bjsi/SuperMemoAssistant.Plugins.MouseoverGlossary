@@ -38,7 +38,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       try
       {
 
-        if (url.IsNullOrEmpty())
+        if (url.IsNullOrEmpty() || ct.IsNull())
           return null;
 
         Match Help = new Regex(UrlUtils.HelpGlossaryRegex).Match(url);
@@ -63,11 +63,14 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
         }
 
       }
+      catch (TaskCanceledException) { }
       catch (Exception ex)
       {
         LogTo.Error($"Failed to FetchHtml for url {url} with exception {ex}");
         throw;
       }
+
+      return null;
     }
 
     private async Task<PopupContent> GetGuruGlossaryItem(RemoteCancellationToken ct, string url, string term)
@@ -115,9 +118,9 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       refs.Title = title;
       refs.Author = "Piotr Wozniak";
       refs.Link = url;
-      refs.Source = "SuperMemoGuru Glossary";
+      refs.Source = "SuperMemo Guru Glossary";
 
-      return new PopupContent(refs, html, true, true, false, -1, url, true, $"https://supermemo.guru/index.php?title={term}&action=edit");
+      return new PopupContent(refs, html, true, browserQuery: url, editUrl: $"https://supermemo.guru/index.php?title={term}&action=edit");
 
     }
 
@@ -168,7 +171,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
       refs.Link = url;
       refs.Source = "SuperMemo Help Glossary";
       refs.Title = titleNode.InnerText;
-      return new PopupContent(refs, html, true, true, false, -1, refs.Link, true, $"https://www.help.supermemo.org/index.php?title=Glossary:{term}&action=edit");
+      return new PopupContent(refs, html, true, browserQuery: refs.Link, editUrl: $"https://www.help.supermemo.org/index.php?title=Glossary:{term}&action=edit");
 
     }
 

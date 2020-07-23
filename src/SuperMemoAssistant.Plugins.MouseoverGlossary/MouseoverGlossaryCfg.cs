@@ -51,6 +51,7 @@ piotr wozniak
 woz";
 
     [Field(Name = "Source Regexes")]
+    [MultiLine]
     public string ReferenceSourceRegexes { get; set; } = @"
 .*supermemo.*
 .*super-memo.*
@@ -63,9 +64,6 @@ woz";
     [Field(Name = "Concept Regexes")]
     [MultiLine]
     public string ConceptNameRegexes { get; set; }
-
-    [Field(Name = "Highlight Color")]
-    public string KeywordHighlightColor { get; set; }
 
     [JsonIgnore]
     public bool IsChanged { get; set; }
