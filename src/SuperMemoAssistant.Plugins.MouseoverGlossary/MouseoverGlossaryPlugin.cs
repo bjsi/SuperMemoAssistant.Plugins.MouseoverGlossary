@@ -43,6 +43,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
   using SuperMemoAssistant.Interop.SuperMemo.Content.Controls;
   using SuperMemoAssistant.Interop.SuperMemo.Core;
   using SuperMemoAssistant.Interop.SuperMemo.Elements.Types;
+  using SuperMemoAssistant.Plugins.MouseoverGlossary.ContentServices;
   using SuperMemoAssistant.Services;
   using SuperMemoAssistant.Services.IO.HotKeys;
   using SuperMemoAssistant.Services.Sentry;
@@ -74,9 +75,14 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
     private const string ProviderName = "SuperMemo Glossary";
 
     /// <summary>
-    /// Content provider to be registered with MouseoverPopup service
+    /// SM Guru Glossary content provider to be registered with MouseoverPopup service
     /// </summary>
-    private ContentService _contentProvider => new ContentService();
+    private GuruContentService _guruContentProvider => new GuruContentService();
+
+    /// <summary>
+    /// SM Help Glossary content provider to be registered with MouseoverPopup service
+    /// </summary>
+    private HelpContentService _helpContentProvider => new HelpContentService();
 
     // Reference Regexes
     private string[] TitleRegexes => Config.ReferenceTitleRegexes?.Replace("\r\n", "\n")?.Split('\n');
@@ -107,11 +113,36 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 
       LoadConfig();
 
+      // Register both providers
+      RegisterGuruProvider();
+      RegisterHelpProvider();
+
+    }
+
+    private void RegisterHelpProvider()
+    {
+
       var referenceRegexes = new ReferenceRegexes(TitleRegexes, AuthorRegexes, LinkRegexes, SourceRegexes);
-      KeywordScanningOptions opts = new KeywordScanningOptions(referenceRegexes, Keywords.KeywordMap, CategoryPathRegexes);
+      KeywordScanningOptions opts = new KeywordScanningOptions(referenceRegexes, Keywords.HelpKeywordMap, MapType.URL, CategoryPathRegexes);
 
       // Register with MouseoverPopup
-      if (!this.RegisterProvider(ProviderName, new string[] { UrlUtils.HelpGlossaryRegex, UrlUtils.GuruGlossaryRegex }, opts, _contentProvider))
+      if (!this.RegisterProvider(ProviderName + " Help", new string[] { UrlUtils.HelpGlossaryRegex }, opts, _helpContentProvider))
+      {
+        LogTo.Error($"Failed to Register provider {ProviderName} with MouseoverPopup Service");
+        return;
+      }
+
+      LogTo.Debug($"Successfully registered provider {ProviderName} with MouseoverPopup Service");
+    }
+
+    private void RegisterGuruProvider()
+    {
+
+      var referenceRegexes = new ReferenceRegexes(TitleRegexes, AuthorRegexes, LinkRegexes, SourceRegexes);
+      KeywordScanningOptions opts = new KeywordScanningOptions(referenceRegexes, Keywords.HelpKeywordMap, MapType.URL, CategoryPathRegexes);
+
+      // Register with MouseoverPopup
+      if (!this.RegisterProvider(ProviderName + " Guru", new string[] { UrlUtils.GuruGlossaryRegex }, opts, _guruContentProvider))
       {
         LogTo.Error($"Failed to Register provider {ProviderName} with MouseoverPopup Service");
         return;
