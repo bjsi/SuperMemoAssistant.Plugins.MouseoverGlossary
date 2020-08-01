@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace SuperMemoAssistant.Plugins.MouseoverGlossary
 {
+
   [Form(Mode = DefaultFields.None)]
   [Title("Dictionary Settings",
        IsVisible = "{Env DialogHostContext}")]

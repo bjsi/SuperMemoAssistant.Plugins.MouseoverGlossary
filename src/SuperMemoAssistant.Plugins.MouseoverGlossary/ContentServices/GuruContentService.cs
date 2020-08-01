@@ -93,7 +93,7 @@ namespace SuperMemoAssistant.Plugins.MouseoverGlossary.ContentServices
       html = string.Format(html, title, definition);
 
       var refs = new References();
-      refs.Title = title;
+      refs.Title = titleNode.InnerText;
       refs.Author = "Piotr Wozniak";
       refs.Link = url;
       refs.Source = "SuperMemo Guru Glossary";
